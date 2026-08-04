@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1746d1">
+  <meta name="description" content="Fan-made THE BOYZ scans archive">
+  <title>Scans Archive — THE BOYZ Archive</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="landing">
+  <header class="masthead" id="top">
+    <div class="utility">
+      <a class="brand" href="https://tbzarchive1206.github.io/tbzarchive/">THE BOYZ / FAN ARCHIVE</a>
+      <nav aria-label="Archive links"><a href="https://tbzarchive1206.github.io/tbzarchive/" target="_blank" rel="noopener noreferrer" data-i18n="mainArchive">MAIN ARCHIVE ↗</a><span>/</span><a href="https://x.com/tbzarchive1206_" target="_blank" rel="noopener noreferrer">TWITTER ↗</a><button class="lang-toggle" id="langToggle" type="button" aria-label="Change language">EN</button></nav>
+    </div>
+    <h1><span class="solid">SCANS</span><span class="outline">ARCHIVE</span></h1>
+    <div class="stats">
+      <p><strong id="collectionCount">—</strong><br><span data-i18n="collections">COLLECTIONS</span></p><i></i>
+      <p><strong id="scanCount">—</strong><br><span data-i18n="scans">SCANS</span></p><i></i>
+      <p><span data-i18n="updated">UPDATED</span><br><strong id="updatedDate">—</strong></p>
+    </div>
+  </header>
+  <main>
+    <section class="landing-controls"><label class="search"><span aria-hidden="true">⌕</span><input id="collectionSearch" type="search" autocomplete="off" data-i18n-placeholder="searchCollections" placeholder="SEARCH COLLECTIONS..."></label></section>
+    <section class="folders-section">
+      <div class="section-kicker"><p><span data-i18n="contents">CONTENTS</span> / <span id="visibleCollections">—</span></p><a class="source-link" id="rootDrive" href="#" target="_blank" rel="noopener noreferrer"><span data-i18n="openSource">OPEN SOURCE FOLDER</span> ↗</a></div>
+      <div class="folder-grid" id="folderGrid"></div>
+      <p class="empty" id="empty" hidden><strong>0</strong><span data-i18n="noCollections">NO COLLECTIONS FOUND</span></p>
+    </section>
+  </main>
+  <footer><a href="https://tbzarchive1206.github.io/tbzarchive/" target="_blank" rel="noopener noreferrer">← <span data-i18n="mainArchive">MAIN ARCHIVE</span></a><a href="#top" data-i18n="backTop">BACK TO TOP ↑</a></footer>
+  <noscript><p class="noscript">JavaScript is required to load this archive.</p></noscript>
+  <script src="data.js"></script>
+  <script src="landing.js"></script>
+</body>
+</html>
+
