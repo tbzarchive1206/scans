@@ -31,3 +31,33 @@ test("archive data contains seven collections", async () => {
   assert.equal(context.window.SCANS_DATA.collections.length, 7);
   assert.ok(context.window.SCANS_DATA.imageCount > 4_000);
 });
+
+test("Magazines contains individual galleries with year metadata", async () => {
+  const context = { window: {} };
+  vm.createContext(context);
+  vm.runInContext(await read("data.js"), context);
+  const magazines = context.window.SCANS_DATA.collections.find((collection) => collection.slug === "magazines");
+  assert.equal(magazines.galleryCount, magazines.galleries.length);
+  assert.ok(magazines.galleryCount > 9);
+  assert.equal(magazines.imageCount, magazines.galleries.reduce((sum, gallery) => sum + gallery.imageCount, 0));
+  assert.ok(magazines.galleries.every((gallery) => Number.isInteger(gallery.releaseYear)));
+  assert.ok(magazines.galleries.every((gallery) => !/^20\d{2}$/.test(gallery.name)));
+  assert.ok(magazines.galleries.some((gallery) => gallery.groups.length > 1));
+});
+
+test("Magazines exposes year filtering and defaults to newest order", async () => {
+  const page = await read("magazines/index.html");
+  const gallery = await read("gallery.js");
+  assert.match(page, /id="yearFilter"/);
+  assert.match(gallery, /sort: isMagazines \? "newest" : "source"/);
+  assert.match(gallery, /gallery\.releaseSort/);
+  assert.match(gallery, /String\(gallery\.releaseYear\) === state\.year/);
+});
+
+test("every page and the Pages artifact include the favicon", async () => {
+  const slugs = JSON.parse(await read("scripts/generated-pages.json"));
+  const pages = await Promise.all([read("index.html"), ...slugs.map((slug) => read(`${slug}/index.html`))]);
+  pages.forEach((page, index) => assert.match(page, new RegExp(`<link rel="icon" type="image/png" href="${index === 0 ? "" : "\\.\\./"}icon\\.png">`)));
+  assert.match(await read("scripts/collection-template.html"), /href="\.\.\/icon\.png"/);
+  assert.match(await read("scripts/prepare_site.py"), /"icon\.png"/);
+});

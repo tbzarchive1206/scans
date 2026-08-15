@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#1746d1">
   <meta name="description" content="THE BOYZ fan-made scans archive">
   <title>Scans Archive — THE BOYZ Archive</title>
+  <link rel="icon" type="image/png" href="../icon.png">
+  <link rel="apple-touch-icon" href="../icon.png">
   <link rel="stylesheet" href="../styles.css">
 </head>
 <body data-page="collection" data-collection="{{COLLECTION_SLUG}}">
@@ -31,6 +33,7 @@
     <section class="controls" aria-label="Gallery controls">
       <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" autocomplete="off" data-i18n-placeholder="searchGalleries" placeholder="SEARCH GALLERIES..."></label>
       <div class="filter-row single-filter">
+        <label id="yearFilterLabel" hidden><span>YEAR</span><select id="yearFilter"><option value="all">ALL YEARS</option></select></label>
         <label><span data-i18n="sort">SORT</span><select id="sortFilter"><option value="source" data-i18n="sourceOrder">SOURCE ORDER</option><option value="newest" data-i18n="newest">NEWEST</option><option value="largest" data-i18n="largest">MOST SCANS</option><option value="az">A—Z</option></select></label>
       </div>
     </section>

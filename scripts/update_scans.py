@@ -141,6 +141,67 @@ def collect_gallery(folder: dict):
     }
 
 
+MONTHS = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+}
+
+
+def magazine_release_data(name: str, fallback_year: int):
+    year_match = re.search(r"\b(20\d{2})\b", name)
+    year = int(year_match.group(1)) if year_match else fallback_year
+    month = 0
+    korean_month = re.search(r"(?<!\d)(1[0-2]|0?[1-9])\s*월", name)
+    if korean_month:
+        month = int(korean_month.group(1))
+    else:
+        lowered = name.casefold()
+        for month_name, month_number in MONTHS.items():
+            if re.search(rf"\b{month_name}\b", lowered):
+                month = month_number
+                break
+    return year, f"{year:04d}-{month:02d}-01"
+
+
+def collect_magazine_galleries(collection_folder: dict):
+    galleries = []
+    for year_folder in collection_folder.get("children", []):
+        if year_folder.get("mimeType") != FOLDER_MIME:
+            continue
+        year_match = re.search(r"\b(20\d{2})\b", year_folder.get("name", ""))
+        if not year_match:
+            gallery = collect_gallery(year_folder)
+            if gallery["imageCount"] or gallery["pdfs"]:
+                release_year, release_sort = magazine_release_data(gallery["name"], 0)
+                gallery["releaseYear"] = release_year
+                gallery["releaseSort"] = release_sort
+                galleries.append(gallery)
+            continue
+        year = int(year_match.group(1))
+        magazine_folders = [child for child in year_folder.get("children", []) if child.get("mimeType") == FOLDER_MIME]
+        for magazine_folder in magazine_folders:
+            gallery = collect_gallery(magazine_folder)
+            if not gallery["imageCount"] and not gallery["pdfs"]:
+                continue
+            release_year, release_sort = magazine_release_data(gallery["name"], year)
+            gallery["releaseYear"] = release_year
+            gallery["releaseSort"] = release_sort
+            galleries.append(gallery)
+        loose = {
+            "id": year_folder["id"],
+            "name": f"{year} — OTHER MAGAZINE SCANS",
+            "children": [child for child in year_folder.get("children", []) if child.get("mimeType") != FOLDER_MIME],
+        }
+        loose_gallery = collect_gallery(loose)
+        if loose_gallery["imageCount"] or loose_gallery["pdfs"]:
+            loose_gallery["id"] = f"{year_folder['id']}-other"
+            loose_gallery["folderId"] = year_folder["id"]
+            loose_gallery["releaseYear"] = year
+            loose_gallery["releaseSort"] = f"{year:04d}-00-01"
+            galleries.append(loose_gallery)
+    return galleries
+
+
 def build_archive(tree: dict):
     collections = []
     used_slugs = set()
@@ -155,21 +216,24 @@ def build_archive(tree: dict):
             suffix += 1
         used_slugs.add(slug)
         name_en, name_ko = bilingual_name(folder["name"])
-        galleries = [
-            collect_gallery(child)
-            for child in folder.get("children", [])
-            if child.get("mimeType") == FOLDER_MIME
-        ]
-        loose = {
-            "id": folder["id"],
-            "name": "OTHER SCANS",
-            "children": [child for child in folder.get("children", []) if child.get("mimeType") != FOLDER_MIME],
-        }
-        loose_gallery = collect_gallery(loose)
-        if loose_gallery["imageCount"] or loose_gallery["pdfs"]:
-            loose_gallery["id"] = f"{folder['id']}-other"
-            loose_gallery["folderId"] = folder["id"]
-            galleries.append(loose_gallery)
+        if slug == "magazines":
+            galleries = collect_magazine_galleries(folder)
+        else:
+            galleries = [
+                collect_gallery(child)
+                for child in folder.get("children", [])
+                if child.get("mimeType") == FOLDER_MIME
+            ]
+            loose = {
+                "id": folder["id"],
+                "name": "OTHER SCANS",
+                "children": [child for child in folder.get("children", []) if child.get("mimeType") != FOLDER_MIME],
+            }
+            loose_gallery = collect_gallery(loose)
+            if loose_gallery["imageCount"] or loose_gallery["pdfs"]:
+                loose_gallery["id"] = f"{folder['id']}-other"
+                loose_gallery["folderId"] = folder["id"]
+                galleries.append(loose_gallery)
         galleries = [gallery for gallery in galleries if gallery["imageCount"] or gallery["pdfs"]]
         dates = [gallery["updatedAt"] for gallery in galleries if gallery.get("updatedAt")]
         collections.append({
@@ -239,5 +303,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 

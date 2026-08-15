@@ -11,7 +11,7 @@ if site.exists():
     shutil.rmtree(site)
 site.mkdir()
 
-for filename in ("index.html", "styles.css", "landing.js", "gallery.js", "data.js"):
+for filename in ("index.html", "icon.png", "styles.css", "landing.js", "gallery.js", "data.js"):
     shutil.copy2(root / filename, site / filename)
 (site / ".nojekyll").write_text("", encoding="utf-8")
 

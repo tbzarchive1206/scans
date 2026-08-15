@@ -24,6 +24,8 @@ W Polsce odpowiada to zwykle godzinom 05:17 i 17:17 latem oraz 04:17 i 16:17 zim
 - Pierwszy poziom folderów Drive tworzy podstrony widoczne na stronie głównej.
 - Drugi poziom tworzy karty galerii.
 - Dalsze podfoldery tworzą sekcje wewnątrz otwartej galerii.
+- W kolekcji `Magazines` foldery roczne nie są wyświetlane jako galerie. Rok jest filtrem, a każdy folder magazynu wewnątrz danego roku tworzy osobną galerię. Galerie są domyślnie sortowane od najnowszej do najstarszej, a ich podfoldery pozostają sekcjami galerii.
+- Wyszukiwarka na stronie `Magazines` przeszukuje nazwy magazynów oraz nazwy ich sekcji.
 - Pliki PDF pojawiają się jako osobne odnośniki w podglądzie galerii.
 - Każdy skan ma link `VIEW` oraz `DOWNLOAD` do oryginalnego pliku w Google Drive.
 

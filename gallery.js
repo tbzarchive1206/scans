@@ -10,7 +10,8 @@
     return;
   }
 
-  const state = { query: "", sort: "source", current: null };
+  const isMagazines = slug === "magazines";
+  const state = { query: "", year: "all", sort: isMagazines ? "newest" : "source", current: null };
   const $ = (selector) => document.querySelector(selector);
   const driveFolder = (id) => `https://drive.google.com/drive/folders/${encodeURIComponent(id)}`;
   const thumb = (id, width = 1000) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${width}`;
@@ -24,8 +25,12 @@
   function sortedGalleries() {
     const items = collection.galleries
       .map((gallery, index) => ({ gallery, index }))
-      .filter(({ gallery }) => gallery.name.toLocaleLowerCase().includes(state.query));
-    if (state.sort === "newest") items.sort((a, b) => (b.gallery.updatedAt || "").localeCompare(a.gallery.updatedAt || ""));
+      .filter(({ gallery }) => `${gallery.name} ${gallery.groups.map((group) => group.name).join(" ")}`.toLocaleLowerCase().includes(state.query))
+      .filter(({ gallery }) => state.year === "all" || String(gallery.releaseYear) === state.year);
+    if (state.sort === "newest") items.sort((a, b) => {
+      const dateOrder = (b.gallery.releaseSort || b.gallery.updatedAt || "").localeCompare(a.gallery.releaseSort || a.gallery.updatedAt || "");
+      return dateOrder || b.index - a.index;
+    });
     if (state.sort === "largest") items.sort((a, b) => b.gallery.imageCount - a.gallery.imageCount);
     if (state.sort === "az") items.sort((a, b) => a.gallery.name.localeCompare(b.gallery.name, undefined, { numeric: true }));
     return items;
@@ -64,12 +69,12 @@
     info.className = "card-info";
     const eyebrow = document.createElement("span");
     eyebrow.className = "eyebrow";
-    eyebrow.textContent = `${collection.nameEn} / ${String(index + 1).padStart(2, "0")}`;
+    eyebrow.textContent = `${collection.nameEn}${gallery.releaseYear ? ` / ${gallery.releaseYear}` : ""} / ${String(index + 1).padStart(2, "0")}`;
     const title = document.createElement("h2");
     title.textContent = gallery.name;
     const meta = document.createElement("div");
     meta.className = "meta";
-    [["SCANS", number(gallery.imageCount)], ["SECTIONS", number(gallery.groups.length)], ["UPDATED", date(gallery.updatedAt)]].forEach(([label, value]) => {
+    [["SCANS", number(gallery.imageCount)], ["SECTIONS", number(gallery.groups.length)], [gallery.releaseYear ? "YEAR" : "UPDATED", gallery.releaseYear || date(gallery.updatedAt)]].forEach(([label, value]) => {
       const labelElement = document.createElement("span");
       labelElement.textContent = label;
       const valueElement = document.createElement("strong");
@@ -98,7 +103,9 @@
     const cards = $("#cards");
     cards.replaceChildren();
     items.forEach(({ gallery }, index) => cards.append(galleryCard(gallery, index)));
-    $("#resultsCount").textContent = `${number(items.length)} GALLERIES`;
+    $("#resultsCount").textContent = isMagazines
+      ? `${state.year === "all" ? "ALL YEARS" : state.year} · ${number(items.length)} GALLERIES`
+      : `${number(items.length)} GALLERIES`;
     $("#empty").hidden = items.length !== 0;
   }
 
@@ -197,6 +204,24 @@
   $("#scanCount").textContent = number(collection.imageCount);
   $("#updatedDate").textContent = date(collection.updatedAt);
   $("#collectionDrive").href = driveFolder(collection.id);
+  const yearFilterLabel = $("#yearFilterLabel");
+  const yearFilter = $("#yearFilter");
+  if (isMagazines && yearFilterLabel && yearFilter) {
+    const years = [...new Set(collection.galleries.map((gallery) => Number(gallery.releaseYear)).filter(Boolean))].sort((a, b) => b - a);
+    years.forEach((year) => {
+      const option = document.createElement("option");
+      option.value = String(year);
+      option.textContent = String(year);
+      yearFilter.append(option);
+    });
+    yearFilterLabel.hidden = false;
+    yearFilterLabel.closest(".filter-row")?.classList.remove("single-filter");
+    yearFilter.addEventListener("change", (event) => {
+      state.year = event.target.value;
+      renderCards();
+    });
+  }
+  $("#sortFilter").value = state.sort;
   $("#search").addEventListener("input", (event) => {
     state.query = event.target.value.trim().toLocaleLowerCase();
     renderCards();
