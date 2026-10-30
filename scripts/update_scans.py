@@ -45,7 +45,7 @@ def list_children(folder_id: str, api_key: str):
             "key": api_key,
             "pageSize": "1000",
             "orderBy": "folder,name_natural",
-            "fields": "nextPageToken,files(id,name,mimeType,size,modifiedTime,imageMediaMetadata(width,height))",
+            "fields": "nextPageToken,files(id,name,description,mimeType,size,modifiedTime,imageMediaMetadata(width,height))",
         }
         if page_token:
             params["pageToken"] = page_token
@@ -63,6 +63,7 @@ def crawl(folder_id: str, api_key: str, name: str = "SCANS ARCHIVE"):
     for item in children:
         if item.get("mimeType") == FOLDER_MIME:
             node = crawl(item["id"], api_key, item["name"])
+            node["description"] = item.get("description", "")
             if item.get("modifiedTime"):
                 node["modifiedTime"] = item["modifiedTime"]
             result["children"].append(node)
@@ -132,6 +133,7 @@ def collect_gallery(folder: dict):
         "id": folder["id"],
         "folderId": folder["id"],
         "name": folder["name"].strip(),
+        "description": folder.get("description", ""),
         "imageCount": len(images),
         "coverId": images[0]["id"] if images else "",
         "updatedAt": max(dates, default=folder.get("modifiedTime", "")),

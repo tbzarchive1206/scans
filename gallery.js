@@ -254,4 +254,6 @@
     if (event.target === $("#galleryDialog")) $("#galleryDialog").close();
   });
   renderCards();
+  const requestedGallery = new URLSearchParams(location.search).get("item");
+  if (requestedGallery && collection.galleries.some(g => g.id === requestedGallery)) openGallery(requestedGallery);
 })();
