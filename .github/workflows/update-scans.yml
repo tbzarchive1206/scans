@@ -48,6 +48,13 @@ jobs:
             git push
           fi
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Export shared search index
+        run: node scripts/export-search.mjs
+
       - name: Prepare minimal Pages artifact
         run: python scripts/prepare_site.py
 
