@@ -11,7 +11,13 @@
   }
 
   const isMagazines = slug === "magazines";
-  const state = { query: "", year: "all", sort: isMagazines ? "newest" : "source", current: null };
+  const isAlbumScans = slug === "album-scans";
+  const hasYearFilter = isMagazines || isAlbumScans;
+  // Album years describe the release, not the date the scans were uploaded.
+  const releaseYear = (gallery) => isAlbumScans
+    ? Number(gallery.name.match(/\b((?:19|20)\d{2})\b/)?.[1]) || 0
+    : Number(gallery.releaseYear) || 0;
+  const state = { query: "", year: "all", sort: hasYearFilter ? "newest" : "source", current: null };
   const $ = (selector) => document.querySelector(selector);
   const driveFolder = (id) => `https://drive.google.com/drive/folders/${encodeURIComponent(id)}`;
   const thumb = (id, width = 1000) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${width}`;
@@ -26,8 +32,9 @@
     const items = collection.galleries
       .map((gallery, index) => ({ gallery, index }))
       .filter(({ gallery }) => `${gallery.name} ${gallery.groups.map((group) => group.name).join(" ")}`.toLocaleLowerCase().includes(state.query))
-      .filter(({ gallery }) => state.year === "all" || String(gallery.releaseYear) === state.year);
+      .filter(({ gallery }) => state.year === "all" || String(releaseYear(gallery)) === state.year);
     if (state.sort === "newest") items.sort((a, b) => {
+      if (isAlbumScans) return releaseYear(b.gallery) - releaseYear(a.gallery) || a.index - b.index;
       const dateOrder = (b.gallery.releaseSort || b.gallery.updatedAt || "").localeCompare(a.gallery.releaseSort || a.gallery.updatedAt || "");
       return dateOrder || b.index - a.index;
     });
@@ -69,12 +76,13 @@
     info.className = "card-info";
     const eyebrow = document.createElement("span");
     eyebrow.className = "eyebrow";
-    eyebrow.textContent = `${collection.nameEn}${gallery.releaseYear ? ` / ${gallery.releaseYear}` : ""} / ${String(index + 1).padStart(2, "0")}`;
+    const year = releaseYear(gallery);
+    eyebrow.textContent = `${collection.nameEn}${year ? ` / ${year}` : ""} / ${String(index + 1).padStart(2, "0")}`;
     const title = document.createElement("h2");
     title.textContent = gallery.name;
     const meta = document.createElement("div");
     meta.className = "meta";
-    [["SCANS", number(gallery.imageCount)], ["SECTIONS", number(gallery.groups.length)], [gallery.releaseYear ? "YEAR" : "UPDATED", gallery.releaseYear || date(gallery.updatedAt)]].forEach(([label, value]) => {
+    [["SCANS", number(gallery.imageCount)], ["SECTIONS", number(gallery.groups.length)], [year ? "YEAR" : "UPDATED", year || date(gallery.updatedAt)]].forEach(([label, value]) => {
       const labelElement = document.createElement("span");
       labelElement.textContent = label;
       const valueElement = document.createElement("strong");
@@ -103,7 +111,7 @@
     const cards = $("#cards");
     cards.replaceChildren();
     items.forEach(({ gallery }, index) => cards.append(galleryCard(gallery, index)));
-    $("#resultsCount").textContent = isMagazines
+    $("#resultsCount").textContent = hasYearFilter
       ? `${state.year === "all" ? "ALL YEARS" : state.year} · ${number(items.length)} GALLERIES`
       : `${number(items.length)} GALLERIES`;
     $("#empty").hidden = items.length !== 0;
@@ -206,8 +214,8 @@
   $("#collectionDrive").href = driveFolder(collection.id);
   const yearFilterLabel = $("#yearFilterLabel");
   const yearFilter = $("#yearFilter");
-  if (isMagazines && yearFilterLabel && yearFilter) {
-    const years = [...new Set(collection.galleries.map((gallery) => Number(gallery.releaseYear)).filter(Boolean))].sort((a, b) => b - a);
+  if (hasYearFilter && yearFilterLabel && yearFilter) {
+    const years = [...new Set(collection.galleries.map(releaseYear).filter(Boolean))].sort((a, b) => b - a);
     years.forEach((year) => {
       const option = document.createElement("option");
       option.value = String(year);
