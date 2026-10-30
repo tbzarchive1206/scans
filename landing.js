@@ -7,6 +7,7 @@
   const $ = (selector) => document.querySelector(selector);
   const driveFolder = (id) => `https://drive.google.com/drive/folders/${encodeURIComponent(id)}`;
   const number = (value) => new Intl.NumberFormat("en-US").format(value || 0);
+  const galleryLabel = (count) => count === 1 ? "GALLERY" : "GALLERIES";
   const date = (value) => value
     ? new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value)).toUpperCase()
     : "—";
@@ -24,7 +25,7 @@
     title.textContent = collection.nameEn;
 
     const meta = document.createElement("small");
-    meta.textContent = `${number(collection.galleryCount)} GALLERIES · ${number(collection.imageCount)} SCANS →`;
+    meta.textContent = `${number(collection.galleryCount)} ${galleryLabel(collection.galleryCount)} · ${number(collection.imageCount)} SCANS →`;
 
     link.append(position, title, meta);
     return link;

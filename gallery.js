@@ -24,6 +24,7 @@
   const view = (id) => `https://drive.google.com/file/d/${encodeURIComponent(id)}/view`;
   const download = (id) => `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
   const number = (value) => new Intl.NumberFormat("en-US").format(value || 0);
+  const galleryLabel = (count) => count === 1 ? "GALLERY" : "GALLERIES";
   const date = (value) => value
     ? new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value)).toUpperCase()
     : "—";
@@ -112,8 +113,8 @@
     cards.replaceChildren();
     items.forEach(({ gallery }, index) => cards.append(galleryCard(gallery, index)));
     $("#resultsCount").textContent = hasYearFilter
-      ? `${state.year === "all" ? "ALL YEARS" : state.year} · ${number(items.length)} GALLERIES`
-      : `${number(items.length)} GALLERIES`;
+      ? `${state.year === "all" ? "ALL YEARS" : state.year} · ${number(items.length)} ${galleryLabel(items.length)}`
+      : `${number(items.length)} ${galleryLabel(items.length)}`;
     $("#empty").hidden = items.length !== 0;
   }
 
@@ -200,7 +201,7 @@
   title.replaceChildren();
   const solid = document.createElement("span");
   solid.className = "solid";
-  solid.textContent = collection.nameEn;
+  solid.textContent = isAlbumScans ? "ALBUM" : collection.nameEn;
   const outline = document.createElement("span");
   outline.className = "outline";
   outline.textContent = "SCANS";
@@ -209,6 +210,7 @@
   $(".collection-masthead").classList.toggle("title-long", length > 17);
   $(".collection-masthead").classList.toggle("title-very-long", length > 23);
   $("#galleryCount").textContent = number(collection.galleryCount);
+  $('[data-i18n="galleries"]').textContent = galleryLabel(collection.galleryCount);
   $("#scanCount").textContent = number(collection.imageCount);
   $("#updatedDate").textContent = date(collection.updatedAt);
   $("#collectionDrive").href = driveFolder(collection.id);
