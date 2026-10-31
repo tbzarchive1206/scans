@@ -16,3 +16,12 @@
 @media(max-width:1050px){.folders-section .folder-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:720px){.folders-section .folder-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.folders-section .folder{min-width:0;padding:13px}.folders-section .folder>strong{min-width:0;font-size:22px}.folders-section .folder>small{font-size:7px;overflow-wrap:anywhere}}
 @media(max-width:380px){.folders-section .folder-grid{grid-template-columns:1fr}}
+
+/* Responsive review v2 */
+@media(max-width:800px){
+  .folders-section .folder-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .folders-section .folder {container-type:inline-size;min-width:0;max-width:100%;padding:12px;aspect-ratio:1/1.04}
+  .folders-section .folder>strong {width:100%;min-width:0;font-size:clamp(12px,12cqw,24px);line-height:1.05;letter-spacing:-.04em;overflow-wrap:normal;word-break:normal}
+  .folders-section .folder>small {max-width:100%;overflow-wrap:anywhere;font-size:7px}
+}
+
